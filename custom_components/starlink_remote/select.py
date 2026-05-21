@@ -8,13 +8,15 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import DATA_DEVICES, DOMAIN
 from .entity_base import StarlinkEntity
+from .spacex.api.device.device_pb2 import DishSetConfigRequest
+from .spacex.api.device.dish_config_pb2 import DishConfig
 
 _LOGGER = logging.getLogger(__name__)
 
 SNOW_MELT_MODES = {
-    "auto": 0,
-    "preheat": 1,
-    "off": 2,
+    "auto": DishConfig.SnowMeltMode.AUTO,
+    "preheat": DishConfig.SnowMeltMode.ALWAYS_ON,
+    "off": DishConfig.SnowMeltMode.ALWAYS_OFF,
 }
 SNOW_MELT_MODES_INV = {v: k for k, v in SNOW_MELT_MODES.items()}
 
@@ -62,9 +64,6 @@ class StarlinkSelectEntity(StarlinkEntity, SelectEntity):
         return self.entity_description.value_fn(dev_data)
 
     async def async_select_option(self, option: str) -> None:
-        from .spacex.api.device.device_pb2 import DishSetConfigRequest
-        from .spacex.api.device.dish_config_pb2 import DishConfig
-
         mode = SNOW_MELT_MODES[option]
         config = DishConfig(snow_melt_mode=mode, apply_snow_melt_mode=True)
         request_data = DishSetConfigRequest(dish_config=config)
